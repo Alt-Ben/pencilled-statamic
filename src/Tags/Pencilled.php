@@ -18,6 +18,10 @@ class Pencilled extends Tags
      * Live availability for a single event, cached for 60 seconds.
      * Exposes spots_remaining, open_slots, sold_out and price_formatted.
      *
+     * When the API is unreachable (offline dev, static site builds) it falls
+     * back to the availability last synced onto the entry, so the tag always
+     * renders a value that a rebuild will refresh.
+     *
      * @return array<string, mixed>|null
      */
     public function availability(): ?array
@@ -28,6 +32,14 @@ class Pencilled extends Tags
             return null;
         }
 
+        return $this->live($slug) ?? $this->synced();
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function live(string $slug): ?array
+    {
         return $this->remember('availability.'.$slug, function () use ($slug) {
             $event = app(PencilledApi::class)->event($slug);
 
@@ -46,6 +58,29 @@ class Pencilled extends Tags
                 'currency' => $firstSlot['currency'] ?? null,
             ];
         });
+    }
+
+    /**
+     * The availability snapshot the sync last wrote onto the current entry.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function synced(): ?array
+    {
+        $availability = $this->context->value('availability');
+
+        if ($availability instanceof \Statamic\Fields\Value) {
+            $availability = $availability->value();
+        }
+
+        if (! is_array($availability)) {
+            return null;
+        }
+
+        return $availability + [
+            'price_formatted' => null,
+            'currency' => null,
+        ];
     }
 
     /**
