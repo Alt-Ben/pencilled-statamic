@@ -1,0 +1,43 @@
+{
+    "name": "pencilled/statamic",
+    "description": "Sync events and live availability from the Pencilled booking platform into Statamic.",
+    "type": "statamic-addon",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Pencilled\\Statamic\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Pencilled\\Statamic\\Tests\\": "tests"
+        }
+    },
+    "require": {
+        "php": "^8.2",
+        "statamic/cms": "^5.0 || ^6.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^9.0 || ^10.0 || ^11.0",
+        "phpunit/phpunit": "^10.5 || ^11.0 || ^12.0"
+    },
+    "config": {
+        "allow-plugins": {
+            "pixelfear/composer-dist-plugin": true,
+            "php-http/discovery": true
+        }
+    },
+    "extra": {
+        "statamic": {
+            "name": "Pencilled",
+            "description": "Sync events and live availability from the Pencilled booking platform."
+        },
+        "laravel": {
+            "providers": [
+                "Pencilled\\Statamic\\ServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
