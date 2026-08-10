@@ -5,6 +5,7 @@ namespace Pencilled\Statamic;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Pencilled\Statamic\Support\PencilledEvent;
+use Pencilled\Statamic\Support\Sanitiser;
 use Statamic\Facades\AssetContainer;
 use Statamic\Facades\Entry;
 
@@ -79,9 +80,9 @@ class EventSync
         $values = [
             'name' => $event->name,
             'location' => $event->location,
-            // Prefer the sanitised HTML the API provides; templates render the
-            // description raw either way (it is HTML-safe at the source).
-            'description' => $event->descriptionHtml ?? $event->description,
+            // Prefer the HTML form and re-sanitise it locally — templates
+            // render the description raw, so the feed is never trusted alone.
+            'description' => Sanitiser::clean($event->descriptionHtml ?? $event->description),
             'start_date' => $event->startDate,
             'end_date' => $event->endDate,
             'booking_url' => $event->bookingUrl,
