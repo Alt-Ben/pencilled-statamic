@@ -79,7 +79,9 @@ class EventSync
         $values = [
             'name' => $event->name,
             'location' => $event->location,
-            'description' => $event->description,
+            // Prefer the sanitised HTML the API provides; templates render the
+            // description raw either way (it is HTML-safe at the source).
+            'description' => $event->descriptionHtml ?? $event->description,
             'start_date' => $event->startDate,
             'end_date' => $event->endDate,
             'booking_url' => $event->bookingUrl,
@@ -101,6 +103,7 @@ class EventSync
         if (config('pencilled.sync_images', true)) {
             $this->syncImage($entry, 'logo', $event->logoUrl, $mapping);
             $this->syncImage($entry, 'hero_image', $event->heroImageUrl, $mapping);
+            $this->syncGallery($entry, $event->images, $mapping);
         }
 
         $entry->set('pencilled', true);
@@ -193,6 +196,72 @@ class EventSync
         } catch (\Throwable $e) {
             Log::warning('Pencilled: image sync failed.', ['url' => $url, 'error' => $e->getMessage()]);
         }
+    }
+
+    /**
+     * Download gallery images into the asset container and assign the mapped
+     * field a list of asset paths. Downloads are skipped while the URL list
+     * is unchanged; a changed list rebuilds the gallery from scratch.
+     *
+     * @param  array<int, array{url: string, alt: string|null}>|null  $images
+     * @param  array<string, string>  $mapping
+     */
+    private function syncGallery(mixed $entry, ?array $images, array $mapping): void
+    {
+        $target = $mapping['gallery'] ?? null;
+
+        if ($target === null || $images === null) {
+            return;
+        }
+
+        $container = AssetContainer::find((string) config('pencilled.asset_container', 'assets'));
+
+        if (! $container) {
+            return;
+        }
+
+        $sources = (array) $entry->get('pencilled_media', []);
+        $urls = array_column($images, 'url');
+
+        if (($sources['gallery'] ?? null) === $urls) {
+            return;
+        }
+
+        $paths = [];
+
+        foreach ($images as $index => $image) {
+            $path = 'pencilled/'.$entry->slug().'-gallery-'.($index + 1).'.'.$this->extension($image['url']);
+
+            try {
+                $response = Http::timeout(30)->get($image['url']);
+
+                if ($response->failed()) {
+                    Log::warning('Pencilled: failed to download gallery image.', [
+                        'url' => $image['url'],
+                        'status' => $response->status(),
+                    ]);
+
+                    continue;
+                }
+
+                $container->disk()->put($path, $response->body());
+                $asset = $container->makeAsset($path);
+
+                if ($image['alt'] !== null) {
+                    $asset->set('alt', $image['alt']);
+                }
+
+                $asset->save();
+                $paths[] = $path;
+            } catch (\Throwable $e) {
+                Log::warning('Pencilled: gallery image sync failed.', ['url' => $image['url'], 'error' => $e->getMessage()]);
+            }
+        }
+
+        $sources['gallery'] = $urls;
+
+        $entry->set($target, $paths);
+        $entry->set('pencilled_media', $sources);
     }
 
     private function extension(string $url): string

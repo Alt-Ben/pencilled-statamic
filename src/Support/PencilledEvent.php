@@ -22,11 +22,14 @@ class PencilledEvent
         public ?string $name = null,
         public ?string $location = null,
         public ?string $description = null,
+        public ?string $descriptionHtml = null,
         public ?string $startDate = null,
         public ?string $endDate = null,
         public ?string $bookingUrl = null,
         public ?string $logoUrl = null,
         public ?string $heroImageUrl = null,
+        /** @var array<int, array{url: string, alt: string|null}>|null */
+        public ?array $images = null,
         public ?array $availability = null,
         public ?array $slots = null,
         public ?string $status = null,
@@ -52,15 +55,45 @@ class PencilledEvent
             name: self::string($data, ['name', 'title']),
             location: self::string($data, ['location']),
             description: self::string($data, ['description']),
+            descriptionHtml: self::string($data, ['description_html']),
             startDate: self::date($data, ['start_date', 'starts_on', 'starts_at']),
             endDate: self::date($data, ['end_date', 'ends_on', 'ends_at']),
             bookingUrl: self::string($data, ['booking_url']),
             logoUrl: self::string($data, ['logo_url', 'logo', 'images.logo']),
             heroImageUrl: self::string($data, ['hero_image_url', 'hero_image', 'images.hero']),
+            images: self::images($data),
             availability: self::availability($data, $slots),
             slots: $slots,
             status: self::string($data, ['status']),
         );
+    }
+
+    /**
+     * Gallery images, when the API provides them as a list of url/alt pairs.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<int, array{url: string, alt: string|null}>|null
+     */
+    private static function images(array $data): ?array
+    {
+        $images = Arr::get($data, 'images');
+
+        if (! is_array($images)) {
+            return null;
+        }
+
+        $normalised = [];
+
+        foreach ($images as $image) {
+            $url = is_array($image) ? Arr::get($image, 'url') : null;
+
+            if (is_string($url) && $url !== '') {
+                $alt = Arr::get($image, 'alt');
+                $normalised[] = ['url' => $url, 'alt' => is_string($alt) ? $alt : null];
+            }
+        }
+
+        return $normalised;
     }
 
     /**

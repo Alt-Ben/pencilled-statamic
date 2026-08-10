@@ -94,6 +94,7 @@ return [
         'availability' => 'availability',
         'logo' => 'logo',
         'hero_image' => 'hero_image',
+        'gallery' => 'gallery',
     ],
 
 ];

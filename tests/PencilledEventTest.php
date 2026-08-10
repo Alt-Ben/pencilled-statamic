@@ -28,6 +28,26 @@ class PencilledEventTest extends TestCase
         $this->assertNull($event->availability);
     }
 
+    public function test_it_parses_rich_descriptions_and_gallery_images(): void
+    {
+        $event = PencilledEvent::fromArray([
+            'slug' => 'the-surge',
+            'description' => 'Post-swim heat therapy.',
+            'description_html' => '<p>Post-swim <strong>heat</strong> therapy.</p>',
+            'images' => [
+                ['url' => 'https://pencilled.app/media/events/1/2/abc.jpg', 'alt' => 'The sauna at dusk'],
+                ['url' => 'https://pencilled.app/media/events/1/2/def.png', 'alt' => null],
+                ['not-a-url' => true],
+            ],
+        ]);
+
+        $this->assertNotNull($event);
+        $this->assertSame('<p>Post-swim <strong>heat</strong> therapy.</p>', $event->descriptionHtml);
+        $this->assertCount(2, $event->images);
+        $this->assertSame('The sauna at dusk', $event->images[0]['alt']);
+        $this->assertNull($event->images[1]['alt']);
+    }
+
     public function test_it_parses_an_enriched_api_shape(): void
     {
         $event = PencilledEvent::fromArray([
