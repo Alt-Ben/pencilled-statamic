@@ -67,12 +67,18 @@ class EventSync
         }
 
         // An event back in the feed after previously disappearing (and being
-        // unpublished by the sync) should come back online.
+        // unpublished by THIS SYNC) should come back online. Entries an editor
+        // drafted by hand carry no marker and are left drafted — a local
+        // unpublish must always beat the feed.
         $republished = false;
 
-        if (! $created && ! $entry->published() && $entry->get('pencilled') === true) {
+        if (! $created && ! $entry->published() && $entry->get('pencilled_unpublished_by_sync') === true) {
             $entry->published(true);
             $republished = true;
+        }
+
+        if ($entry->published()) {
+            $entry->remove('pencilled_unpublished_by_sync');
         }
 
         $before = $entry->data()->all();
@@ -138,6 +144,10 @@ class EventSync
             ->reject(fn ($entry) => in_array($entry->slug(), $slugs, true))
             ->filter(fn ($entry) => $entry->published())
             ->each(function ($entry) use (&$count) {
+                // Marked so the sync knows it may republish this entry when
+                // the event returns to the feed — hand-drafted entries never
+                // carry the marker and stay drafted.
+                $entry->set('pencilled_unpublished_by_sync', true);
                 $entry->published(false)->save();
                 $count++;
             });
