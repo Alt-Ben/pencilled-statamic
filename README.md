@@ -1,6 +1,6 @@
 # Pencilled for Statamic
 
-Sync events and live availability from the [Pencilled](https://pencilled.io) booking platform into your Statamic site.
+Sync events and live availability from the [Pencilled](https://pencilled.app) booking platform into your Statamic site.
 
 Your events live in a normal Statamic collection — so your templates, blueprints and editors work exactly as they always have — while Pencilled keeps the entries up to date and provides live availability at render time.
 
@@ -32,7 +32,7 @@ php artisan vendor:publish --tag=pencilled-config
 Add your credentials to `.env`:
 
 ```dotenv
-PENCILLED_BASE_URL=https://pencilled.io
+PENCILLED_BASE_URL=https://pencilled.app
 PENCILLED_OPERATOR=your-operator-slug
 PENCILLED_WEBHOOK_SECRET=your-shared-secret
 ```
@@ -49,7 +49,7 @@ php please pencilled:sync
 
 | Key | Default | Description |
 | --- | --- | --- |
-| `base_url` | `https://pencilled.io` | The Pencilled instance to read from. |
+| `base_url` | `https://pencilled.app` | The Pencilled instance to read from. |
 | `operator` | — | Your operator slug on Pencilled. |
 | `collection` | `events` | The collection synced entries are written to. |
 | `asset_container` | `assets` | Where event imagery is downloaded (into a `pencilled` folder). |

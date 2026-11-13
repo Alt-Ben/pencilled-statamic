@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'base_url' => env('PENCILLED_BASE_URL', 'https://pencilled.io'),
+    'base_url' => env('PENCILLED_BASE_URL', 'https://pencilled.app'),
 
     'operator' => env('PENCILLED_OPERATOR'),
 
