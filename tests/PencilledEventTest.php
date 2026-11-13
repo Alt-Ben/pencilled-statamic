@@ -16,7 +16,7 @@ class PencilledEventTest extends TestCase
             'description' => 'Post-swim heat therapy.',
             'starts_on' => '2026-10-17',
             'ends_on' => null,
-            'booking_url' => 'https://pencilled.io/the-recovery-dock/the-surge',
+            'booking_url' => 'https://pencilled.app/the-recovery-dock/the-surge',
         ]);
 
         $this->assertNotNull($event);
@@ -55,8 +55,8 @@ class PencilledEventTest extends TestCase
             'slug' => 'the-surge',
             'start_date' => '2026-10-17',
             'end_date' => '2026-10-18',
-            'logo_url' => 'https://pencilled.io/storage/logo.png',
-            'hero_image_url' => 'https://pencilled.io/storage/hero.jpg',
+            'logo_url' => 'https://pencilled.app/storage/logo.png',
+            'hero_image_url' => 'https://pencilled.app/storage/hero.jpg',
             'availability' => [
                 'spots_remaining' => 12,
                 'open_slots' => 3,
@@ -66,8 +66,8 @@ class PencilledEventTest extends TestCase
         $this->assertNotNull($event);
         $this->assertSame('2026-10-17', $event->startDate);
         $this->assertSame('2026-10-18', $event->endDate);
-        $this->assertSame('https://pencilled.io/storage/logo.png', $event->logoUrl);
-        $this->assertSame('https://pencilled.io/storage/hero.jpg', $event->heroImageUrl);
+        $this->assertSame('https://pencilled.app/storage/logo.png', $event->logoUrl);
+        $this->assertSame('https://pencilled.app/storage/hero.jpg', $event->heroImageUrl);
         $this->assertSame(12, $event->availability['spots_remaining']);
         $this->assertSame(3, $event->availability['open_slots']);
         $this->assertFalse($event->availability['sold_out']);
